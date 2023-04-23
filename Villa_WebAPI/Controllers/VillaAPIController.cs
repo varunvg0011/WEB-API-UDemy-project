@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Villa_WebAPI.Data;
+using Villa_WebAPI.Logging;
 using Villa_WebAPI.Models;
 using Villa_WebAPI.Models.DTO;
 
@@ -13,6 +14,14 @@ namespace Villa_WebAPI.Controllers
     [ApiController]
     public class VillaAPIController : ControllerBase
     {
+        private readonly ILogging _logger;
+        //private readonly ILogger<VillaAPIController> _logger;
+        public VillaAPIController(ILogging /*ILogger<VillaAPIController> */logger)
+        {
+            _logger = logger;
+        }
+
+
         //Why use ActionResult?
         //ActionResult is defined from the interface IActionResult
         //and helps us to return any type of datatype and also the status code
@@ -20,6 +29,8 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
         public ActionResult<IEnumerable<VillaDTO>> GetVillas()
         {
+            //_logger.LogInformation("Getting all Villas");
+            _logger.Log("Getting all Villas", "");
             return Ok(VillaStore.villaList);
         }
 
@@ -37,9 +48,10 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult GetVilla(int id)
         {
-
             if (id == 0)
             {
+                //_logger.LogError("Get Villa Error with id" + id);
+                _logger.Log("Get Villa Error with id " + id, "error");
                 return BadRequest();
             }
             var villa = VillaStore.villaList.FirstOrDefault(i => i.id == id);
