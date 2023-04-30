@@ -1,6 +1,8 @@
 
 
+using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Villa_WebAPI.Data;
 using Villa_WebAPI.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,8 +17,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 //this is you telling the application that it does not have to use default logger
 //and use the serilog instead
-builder.Host.UseSerilog();
+//builder.Host.UseSerilog();
 
+
+
+
+//add entityFrameword connection string
+builder.Services.AddDbContext<ApplicationDbContext>(option =>
+{
+    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
+});
+    
 
 builder.Services.AddControllers
     (option => { 

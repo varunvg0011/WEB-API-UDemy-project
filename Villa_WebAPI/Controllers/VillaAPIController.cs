@@ -14,13 +14,30 @@ namespace Villa_WebAPI.Controllers
     [ApiController]
     public class VillaAPIController : ControllerBase
     {
-        private readonly ILogging _logger;
-        //private readonly ILogger<VillaAPIController> _logger;
-        public VillaAPIController(ILogging /*ILogger<VillaAPIController> */logger)
-        {
-            _logger = logger;
-        }
+        //for serilog
+        //private readonly ILogging _logger;
 
+        //for default logger
+        //private readonly ILogger<VillaAPIController> _logger;
+
+        //serilog
+        //public VillaAPIController(ILogging logger)
+        //{
+        //    _logger = logger;
+        //}
+
+        //default logger
+        //public VillaAPIController(ILogger<VillaAPIController> logger)
+        //{
+        //    _logger = logger;
+        //}
+
+        private readonly ApplicationDbContext _db;
+
+        public VillaAPIController( ApplicationDbContext db)
+        {
+
+        }
 
         //Why use ActionResult?
         //ActionResult is defined from the interface IActionResult
@@ -29,8 +46,11 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
         public ActionResult<IEnumerable<VillaDTO>> GetVillas()
         {
+            //default logger
             //_logger.LogInformation("Getting all Villas");
-            _logger.Log("Getting all Villas", "");
+
+            //serilog
+            //_logger.Log("Getting all Villas", "");
             return Ok(VillaStore.villaList);
         }
 
@@ -50,8 +70,11 @@ namespace Villa_WebAPI.Controllers
         {
             if (id == 0)
             {
+                //default logger
                 //_logger.LogError("Get Villa Error with id" + id);
-                _logger.Log("Get Villa Error with id " + id, "error");
+
+                //serilog
+                //_logger.Log("Get Villa Error with id " + id, "error");
                 return BadRequest();
             }
             var villa = VillaStore.villaList.FirstOrDefault(i => i.id == id);
