@@ -2,7 +2,7 @@
 
 namespace Villa_WebAPI.Models.DTO
 {
-    public class VillaDTO
+    public class VillaCreateDTO
     {
         public int id { get; set; }
 
