@@ -4,7 +4,7 @@ namespace Villa_WebAPI.Models.DTO
 {
     public class VillaCreateDTO
     {
-        public int id { get; set; }
+        
 
         [Required]
         [MaxLength(30)]

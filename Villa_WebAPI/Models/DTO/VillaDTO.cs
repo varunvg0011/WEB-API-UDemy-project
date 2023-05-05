@@ -2,9 +2,8 @@
 
 namespace Villa_WebAPI.Models.DTO
 {
-    public class VillaUpdateDTO
+    public class VillaDTO
     {
-        [Required]
         public int id { get; set; }
 
         [Required]
@@ -14,11 +13,8 @@ namespace Villa_WebAPI.Models.DTO
 
         [Required]
         public double Rate { get; set; }
-        [Required]
         public int Occupancy { get; set; }
-        [Required]
         public int Sqft { get; set; }
-        [Required]
         public string ImageUrl { get; set; }
         public string Amenity { get; set; }
     }

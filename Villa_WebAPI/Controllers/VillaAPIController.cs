@@ -44,8 +44,8 @@ namespace Villa_WebAPI.Controllers
         //ActionResult is defined from the interface IActionResult
         //and helps us to return any type of datatype and also the status code
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaCreateDTO))]
-        public ActionResult<IEnumerable<VillaCreateDTO>> GetVillas()
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
+        public ActionResult<IEnumerable<VillaDTO>> GetVillas()
         {
             //default logger
             //_logger.LogInformation("Getting all Villas");
@@ -65,7 +65,7 @@ namespace Villa_WebAPI.Controllers
         /*Also, we are sending typeOf here as we have only defined
          ActionResult in the method return type instead of 
         ActionResult<T>*/
-        [ProducesResponseType(StatusCodes.Status200OK, Type=typeof(VillaCreateDTO))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type=typeof(VillaDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult GetVilla(int id)
@@ -90,7 +90,7 @@ namespace Villa_WebAPI.Controllers
 
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created, Type=typeof(VillaCreateDTO))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type=typeof(VillaDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult CreateVilla([FromBody]VillaCreateDTO villaDTO)
@@ -112,21 +112,21 @@ namespace Villa_WebAPI.Controllers
                 return BadRequest(villaDTO);
             }
             //if > 0 that means it is not a create request
-            if (villaDTO.id > 0)
-            {
-                //we are returning a custom status code that is not
-                //one of our pre-defined 
+            //commenting below id after changing villaDTO obj to villaCreateDTO as it is not needed in this case
+            //if (villaDTO.id > 0)
+            //{
+            //    //we are returning a custom status code that is not
+            //    //one of our pre-defined 
 
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            //    return StatusCode(StatusCodes.Status500InternalServerError);
+            //}
 
             //converting villaDTO to villa type as we are passing villa type 
             //object to the DB side
             Villa model = new()
             {
                 Amenity = villaDTO.Amenity,
-                Details = villaDTO.Details,
-                id = villaDTO.id,
+                Details = villaDTO.Details,                
                 ImageUrl = villaDTO.ImageUrl,
                 Name = villaDTO.Name,
                 Occupancy = villaDTO.Occupancy,
@@ -138,7 +138,7 @@ namespace Villa_WebAPI.Controllers
 
             
             //return Ok(villaDTO);
-            return CreatedAtRoute("GetVilla", new {id = villaDTO.id}, villaDTO);
+            return CreatedAtRoute("GetVilla", new {id = model.id}, model);
         }
 
 
@@ -167,7 +167,7 @@ namespace Villa_WebAPI.Controllers
         [HttpPut("{id:int}", Name = "UpdateVilla")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         
-        public IActionResult UpdateVilla(int id, [FromBody] VillaCreateDTO villaDTO)
+        public IActionResult UpdateVilla(int id, [FromBody] VillaUpdateDTO villaDTO)
         {
             if(villaDTO == null || id!= villaDTO.id)
             {
@@ -200,7 +200,7 @@ namespace Villa_WebAPI.Controllers
 
 
         [HttpPatch("{id:int}", Name = "UpdatePartialVilla")]
-        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaCreateDTO> patchDTO)
+        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDTO> patchDTO)
         {
             if (patchDTO == null || id == 0)
             {
@@ -213,9 +213,9 @@ namespace Villa_WebAPI.Controllers
             //EF doesn't allow 1 model being tracked twice.
             var villa = _db.Villas.AsNoTracking().FirstOrDefault(i => i.id == id);
 
-            //Firsst we are changing villa to villaDTO so that we can pass
-            //to applyTo function below in the form of villaDTO
-            VillaCreateDTO villaDTO = new()
+            //Firsst we are changing villa to VillaUpdateDTO so that we can pass
+            //to applyTo function below in the form of VillaUpdateDTO
+            VillaUpdateDTO villaDTO = new()
             {
                 Amenity = villa.Amenity,
                 Details = villa.Details,
