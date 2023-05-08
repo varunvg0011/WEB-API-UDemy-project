@@ -45,14 +45,14 @@ namespace Villa_WebAPI.Controllers
         //and helps us to return any type of datatype and also the status code
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
-        public ActionResult<IEnumerable<VillaDTO>> GetVillas()
+        public async Task<ActionResult<IEnumerable<VillaDTO>>> GetVillas()
         {
             //default logger
             //_logger.LogInformation("Getting all Villas");
 
             //serilog
             //_logger.Log("Getting all Villas", "");
-            var allVillas = _db.Villas.ToList();
+            var allVillas = await _db.Villas.ToListAsync();
             return Ok(allVillas);
         }
 
@@ -65,10 +65,10 @@ namespace Villa_WebAPI.Controllers
         /*Also, we are sending typeOf here as we have only defined
          ActionResult in the method return type instead of 
         ActionResult<T>*/
-        [ProducesResponseType(StatusCodes.Status200OK, Type=typeof(VillaDTO))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult GetVilla(int id)
+        public async Task<ActionResult<VillaDTO>> GetVilla(int id)
         {
             if (id == 0)
             {
@@ -79,7 +79,7 @@ namespace Villa_WebAPI.Controllers
                 //_logger.Log("Get Villa Error with id " + id, "error");
                 return BadRequest();
             }
-            var villa = _db.Villas.FirstOrDefault(i => i.id == id);
+            var villa = await _db.Villas.FirstOrDefaultAsync(i => i.id == id);
             if(villa == null)
             {
                 return NotFound();
@@ -90,26 +90,26 @@ namespace Villa_WebAPI.Controllers
 
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created, Type=typeof(VillaDTO))]
+        [ProducesResponseType(StatusCodes.Status201Created/*, Type=typeof(VillaCreateDTO)*/)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult CreateVilla([FromBody]VillaCreateDTO villaDTO)
+        public async Task<ActionResult<VillaDTO>> CreateVilla([FromBody]VillaCreateDTO createVilla)
         {
             //if (!ModelState.IsValid)
             //{
             //    return BadRequest(ModelState);
             //}
 
-            if(_db.Villas.FirstOrDefault(u=>u.Name.ToLower() == villaDTO.Name.ToLower()) != null)
+            if(await _db.Villas.FirstOrDefaultAsync(u=>u.Name.ToLower() == createVilla.Name.ToLower()) != null)
             {
                 ModelState.AddModelError("CustomError", "Villa already Exists!");
                 return BadRequest(ModelState);
             }
 
             //sending null object not allowed
-            if(villaDTO == null)
+            if(createVilla == null)
             {
-                return BadRequest(villaDTO);
+                return BadRequest(createVilla);
             }
             //if > 0 that means it is not a create request
             //commenting below id after changing villaDTO obj to villaCreateDTO as it is not needed in this case
@@ -125,16 +125,16 @@ namespace Villa_WebAPI.Controllers
             //object to the DB side
             Villa model = new()
             {
-                Amenity = villaDTO.Amenity,
-                Details = villaDTO.Details,                
-                ImageUrl = villaDTO.ImageUrl,
-                Name = villaDTO.Name,
-                Occupancy = villaDTO.Occupancy,
-                Rate = villaDTO.Rate,
-                Sqft = villaDTO.Sqft,
+                Amenity = createVilla.Amenity,
+                Details = createVilla.Details,                
+                ImageUrl = createVilla.ImageUrl,
+                Name = createVilla.Name,
+                Occupancy = createVilla.Occupancy,
+                Rate = createVilla.Rate,
+                Sqft = createVilla.Sqft,
             };
-            _db.Villas.Add(model);
-            _db.SaveChanges();
+            await _db.Villas.AddAsync(model);
+            await _db.SaveChangesAsync();
 
             
             //return Ok(villaDTO);
@@ -147,13 +147,13 @@ namespace Villa_WebAPI.Controllers
         [HttpDelete("{id:int}", Name = "DeleteVilla")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult DeleteVilla(int id)
+        public async Task<IActionResult> DeleteVilla(int id)
         {
             if (id == 0)
             {
                 return BadRequest();
             }
-            var villa = _db.Villas.FirstOrDefault(u=>u.id == id);
+            var villa = await _db.Villas.FirstOrDefaultAsync(u=>u.id == id);
             if(villa == null)
             {
                 return NotFound();
@@ -167,7 +167,7 @@ namespace Villa_WebAPI.Controllers
         [HttpPut("{id:int}", Name = "UpdateVilla")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         
-        public IActionResult UpdateVilla(int id, [FromBody] VillaUpdateDTO villaDTO)
+        public async Task<IActionResult> UpdateVilla(int id, [FromBody] VillaUpdateDTO villaDTO)
         {
             if(villaDTO == null || id!= villaDTO.id)
             {
@@ -192,7 +192,7 @@ namespace Villa_WebAPI.Controllers
                 Sqft = villaDTO.Sqft,
             };
             _db.Villas.Update(model);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
             return new JsonResult(new {Success = true , message = "Villa details updated" });
         }
@@ -200,7 +200,7 @@ namespace Villa_WebAPI.Controllers
 
 
         [HttpPatch("{id:int}", Name = "UpdatePartialVilla")]
-        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDTO> patchDTO)
+        public async Task<IActionResult> UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDTO> patchDTO)
         {
             if (patchDTO == null || id == 0)
             {
@@ -211,7 +211,7 @@ namespace Villa_WebAPI.Controllers
             //villa with mentioned ID in this statement as we are updating it using
             //update method below and that one also has the villa model with id 6.
             //EF doesn't allow 1 model being tracked twice.
-            var villa = _db.Villas.AsNoTracking().FirstOrDefault(i => i.id == id);
+            var villa = await _db.Villas.AsNoTracking().FirstOrDefaultAsync(i => i.id == id);
 
             //Firsst we are changing villa to VillaUpdateDTO so that we can pass
             //to applyTo function below in the form of VillaUpdateDTO
@@ -249,7 +249,7 @@ namespace Villa_WebAPI.Controllers
 
 
             _db.Villas.Update(model);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
