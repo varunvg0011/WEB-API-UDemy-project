@@ -93,52 +93,58 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type=typeof(VillaCreateDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult CreateVilla([FromBody]VillaCreateDTO villaDTO)
+        public ActionResult<VillaDTO> CreateVilla([FromBody]VillaCreateDTO villaCreateDTO)
         {
             //if (!ModelState.IsValid)
             //{
             //    return BadRequest(ModelState);
             //}
 
-            if(_db.Villas.FirstOrDefault(u=>u.Name.ToLower() == villaDTO.Name.ToLower()) != null)
+            if(_db.Villas.FirstOrDefault(u=>u.Name.ToLower() == villaCreateDTO.Name.ToLower()) != null)
             {
                 ModelState.AddModelError("CustomError", "Villa already Exists!");
                 return BadRequest(ModelState);
             }
 
             //sending null object not allowed
-            if(villaDTO == null)
+            if(villaCreateDTO == null)
             {
-                return BadRequest(villaDTO);
+                return BadRequest(villaCreateDTO);
             }
-            //if > 0 that means it is not a create request
-            if (villaDTO.id > 0)
-            {
-                //we are returning a custom status code that is not
-                //one of our pre-defined 
 
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            //if > 0 that means it is not a create request
+            //commenting below since changed VillaDTO to VillaCreateDTO and id checking is no more
+            //needed anymore
+            //if (villaDTO.id > 0)
+            //{
+            //    //we are returning a custom status code that is not
+            //    //one of our pre-defined 
+
+            //    return StatusCode(StatusCodes.Status500InternalServerError);
+            //}
+
 
             //converting villaDTO to villa type as we are passing villa type 
             //object to the DB side
             Villa model = new()
             {
-                Amenity = villaDTO.Amenity,
-                Details = villaDTO.Details,
-                id = villaDTO.id,
-                ImageUrl = villaDTO.ImageUrl,
-                Name = villaDTO.Name,
-                Occupancy = villaDTO.Occupancy,
-                Rate = villaDTO.Rate,
-                Sqft = villaDTO.Sqft,
+                Amenity = villaCreateDTO.Amenity,
+                Details = villaCreateDTO.Details,
+
+                //removing the id since not needed for VillaCreateDTO
+                //id = villaDTO.id,
+                ImageUrl = villaCreateDTO.ImageUrl,
+                Name = villaCreateDTO.Name,
+                Occupancy = villaCreateDTO.Occupancy,
+                Rate = villaCreateDTO.Rate,
+                Sqft = villaCreateDTO.Sqft,
             };
             _db.Villas.Add(model);
             _db.SaveChanges();
 
             
             //return Ok(villaDTO);
-            return CreatedAtRoute("GetVilla", new {id = villaDTO.id}, villaDTO);
+            return CreatedAtRoute("GetVilla", new {id = model.id}, model);
         }
 
 
@@ -167,9 +173,9 @@ namespace Villa_WebAPI.Controllers
         [HttpPut("{id:int}", Name = "UpdateVilla")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         
-        public IActionResult UpdateVilla(int id, [FromBody] VillaCreateDTO villaDTO)
+        public IActionResult UpdateVilla(int id, [FromBody] VillaUpdateDTO villaUpdateDTO)
         {
-            if(villaDTO == null || id!= villaDTO.id)
+            if(villaUpdateDTO == null || id!= villaUpdateDTO.id)
             {
                 return BadRequest();
             }
@@ -182,14 +188,14 @@ namespace Villa_WebAPI.Controllers
             //adding below and commenting above for EF core
             Villa model = new()
             {
-                Amenity = villaDTO.Amenity,
-                Details = villaDTO.Details,
-                id = villaDTO.id,
-                ImageUrl = villaDTO.ImageUrl,
-                Name = villaDTO.Name,
-                Occupancy = villaDTO.Occupancy,
-                Rate = villaDTO.Rate,
-                Sqft = villaDTO.Sqft,
+                Amenity = villaUpdateDTO.Amenity,
+                Details = villaUpdateDTO.Details,
+                id = villaUpdateDTO.id,
+                ImageUrl = villaUpdateDTO.ImageUrl,
+                Name = villaUpdateDTO.Name,
+                Occupancy = villaUpdateDTO.Occupancy,
+                Rate = villaUpdateDTO.Rate,
+                Sqft = villaUpdateDTO.Sqft,
             };
             _db.Villas.Update(model);
             _db.SaveChanges();
@@ -200,7 +206,7 @@ namespace Villa_WebAPI.Controllers
 
 
         [HttpPatch("{id:int}", Name = "UpdatePartialVilla")]
-        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaCreateDTO> patchDTO)
+        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDTO> patchDTO)
         {
             if (patchDTO == null || id == 0)
             {
@@ -215,7 +221,7 @@ namespace Villa_WebAPI.Controllers
 
             //Firsst we are changing villa to villaDTO so that we can pass
             //to applyTo function below in the form of villaDTO
-            VillaCreateDTO villaDTO = new()
+            VillaUpdateDTO villaDTO = new()
             {
                 Amenity = villa.Amenity,
                 Details = villa.Details,
