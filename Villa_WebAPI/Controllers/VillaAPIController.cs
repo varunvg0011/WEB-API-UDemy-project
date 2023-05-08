@@ -167,9 +167,9 @@ namespace Villa_WebAPI.Controllers
         [HttpPut("{id:int}", Name = "UpdateVilla")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         
-        public async Task<IActionResult> UpdateVilla(int id, [FromBody] VillaUpdateDTO villaDTO)
+        public async Task<IActionResult> UpdateVilla(int id, [FromBody] VillaUpdateDTO villaUpdateDTO)
         {
-            if(villaDTO == null || id!= villaDTO.id)
+            if(villaUpdateDTO == null || id!= villaUpdateDTO.id)
             {
                 return BadRequest();
             }
@@ -182,14 +182,15 @@ namespace Villa_WebAPI.Controllers
             //adding below and commenting above for EF core
             Villa model = new()
             {
-                Amenity = villaDTO.Amenity,
-                Details = villaDTO.Details,
-                id = villaDTO.id,
-                ImageUrl = villaDTO.ImageUrl,
-                Name = villaDTO.Name,
-                Occupancy = villaDTO.Occupancy,
-                Rate = villaDTO.Rate,
-                Sqft = villaDTO.Sqft,
+                Amenity = villaUpdateDTO.Amenity,
+                Details = villaUpdateDTO.Details,
+                id = villaUpdateDTO.id,
+                ImageUrl = villaUpdateDTO.ImageUrl,
+                Name = villaUpdateDTO.Name,
+                Occupancy = villaUpdateDTO.Occupancy,
+                Rate = villaUpdateDTO.Rate,
+
+                Sqft = villaUpdateDTO.Sqft,
             };
             _db.Villas.Update(model);
             await _db.SaveChangesAsync();
