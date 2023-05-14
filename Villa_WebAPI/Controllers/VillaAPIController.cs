@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using Villa_WebAPI.Data;
 using Villa_WebAPI.Logging;
 using Villa_WebAPI.Models;
 using Villa_WebAPI.Models.DTO;
+using Villa_WebAPI.Repository;
 
 namespace Villa_WebAPI.Controllers
 {
@@ -33,11 +35,17 @@ namespace Villa_WebAPI.Controllers
         //    _logger = logger;
         //}
 
-        private readonly ApplicationDbContext _db;
 
-        public VillaAPIController( ApplicationDbContext db)
+        //rather than making the direct connection with application DB context by using below,
+        //we are going to have repository pattern for it.
+        //private readonly ApplicationDbContext _db;
+        private readonly IMapper _mapper;
+        private readonly IVillaRepository _dbVilla;
+        public VillaAPIController( /*ApplicationDbContext db*/ IVillaRepository dbVilla, IMapper mapper)
         {
-            _db = db;
+            //_db = db;
+            _dbVilla = dbVilla;
+            _mapper = mapper;
         }
 
         //Why use ActionResult?
@@ -52,8 +60,8 @@ namespace Villa_WebAPI.Controllers
 
             //serilog
             //_logger.Log("Getting all Villas", "");
-            var allVillas = await _db.Villas.ToListAsync();
-            return Ok(allVillas);
+            IEnumerable<Villa> allVillas = await _dbVilla.GetAllAsync();
+            return Ok(_mapper.Map<List<VillaDTO>>(allVillas));
         }
 
 
@@ -79,12 +87,12 @@ namespace Villa_WebAPI.Controllers
                 //_logger.Log("Get Villa Error with id " + id, "error");
                 return BadRequest();
             }
-            var villa = await _db.Villas.FirstOrDefaultAsync(i => i.id == id);
+            var villa = await _dbVilla.GetAsync(i => i.id == id);
             if(villa == null)
             {
                 return NotFound();
             }
-            return Ok(villa);
+            return Ok(_mapper.Map<VillaDTO>(villa));
         }
 
 
@@ -93,23 +101,23 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created/*, Type=typeof(VillaCreateDTO)*/)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<VillaDTO>> CreateVilla([FromBody]VillaCreateDTO createVilla)
+        public async Task<ActionResult<VillaDTO>> CreateVilla([FromBody]VillaCreateDTO createVillaDTO)
         {
             //if (!ModelState.IsValid)
             //{
             //    return BadRequest(ModelState);
             //}
 
-            if(await _db.Villas.FirstOrDefaultAsync(u=>u.Name.ToLower() == createVilla.Name.ToLower()) != null)
+            if(await _dbVilla.GetAsync(u=>u.Name.ToLower() == createVillaDTO.Name.ToLower()) != null)
             {
                 ModelState.AddModelError("CustomError", "Villa already Exists!");
                 return BadRequest(ModelState);
             }
 
             //sending null object not allowed
-            if(createVilla == null)
+            if(createVillaDTO == null)
             {
-                return BadRequest(createVilla);
+                return BadRequest(createVillaDTO);
             }
             //if > 0 that means it is not a create request
             //commenting below id after changing villaDTO obj to villaCreateDTO as it is not needed in this case
@@ -123,18 +131,23 @@ namespace Villa_WebAPI.Controllers
 
             //converting villaDTO to villa type as we are passing villa type 
             //object to the DB side
-            Villa model = new()
-            {
-                Amenity = createVilla.Amenity,
-                Details = createVilla.Details,                
-                ImageUrl = createVilla.ImageUrl,
-                Name = createVilla.Name,
-                Occupancy = createVilla.Occupancy,
-                Rate = createVilla.Rate,
-                Sqft = createVilla.Sqft,
-            };
-            await _db.Villas.AddAsync(model);
-            await _db.SaveChangesAsync();
+            //not needed anymore in case of automapper
+            //Villa model = new()
+            //{
+            //    Amenity = createVillaDTO.Amenity,
+            //    Details = createVillaDTO.Details,                
+            //    ImageUrl = createVillaDTO.ImageUrl,
+            //    Name = createVillaDTO.Name,
+            //    Occupancy = createVillaDTO.Occupancy,
+            //    Rate = createVillaDTO.Rate,
+            //    Sqft = createVillaDTO.Sqft,
+            //};
+
+            Villa model = _mapper.Map<Villa>(createVillaDTO);
+
+
+            await _dbVilla.CreateAsync(model);
+            
 
             
             //return Ok(villaDTO);
@@ -153,13 +166,14 @@ namespace Villa_WebAPI.Controllers
             {
                 return BadRequest();
             }
-            var villa = await _db.Villas.FirstOrDefaultAsync(u=>u.id == id);
+            var villa = await _dbVilla.GetAsync(u=>u.id == id);
             if(villa == null)
             {
                 return NotFound();
             }
-            _db.Villas.Remove(villa);
-            _db.SaveChanges();
+            
+            await _dbVilla.RemoveAsync(villa);
+            
             return new JsonResult(new  {Success= true, message= "Villa has been deleted!"});
         }
 
@@ -179,21 +193,27 @@ namespace Villa_WebAPI.Controllers
             //villa.Sqft = villaDTO.Sqft;
 
 
-            //adding below and commenting above for EF core
-            Villa model = new()
-            {
-                Amenity = villaUpdateDTO.Amenity,
-                Details = villaUpdateDTO.Details,
-                id = villaUpdateDTO.id,
-                ImageUrl = villaUpdateDTO.ImageUrl,
-                Name = villaUpdateDTO.Name,
-                Occupancy = villaUpdateDTO.Occupancy,
-                Rate = villaUpdateDTO.Rate,
 
-                Sqft = villaUpdateDTO.Sqft,
-            };
-            _db.Villas.Update(model);
-            await _db.SaveChangesAsync();
+
+            //adding below and commenting above for EF core
+            //not needed anymore in case of automapper
+            //Villa model = new()
+            //{
+            //    Amenity = villaUpdateDTO.Amenity,
+            //    Details = villaUpdateDTO.Details,
+            //    id = villaUpdateDTO.id,
+            //    ImageUrl = villaUpdateDTO.ImageUrl,
+            //    Name = villaUpdateDTO.Name,
+            //    Occupancy = villaUpdateDTO.Occupancy,
+            //    Rate = villaUpdateDTO.Rate,
+
+            //    Sqft = villaUpdateDTO.Sqft,
+            //};
+
+
+            Villa model = _mapper.Map<Villa>(villaUpdateDTO);
+
+            await _dbVilla.UpdateAsync(model);
 
             return new JsonResult(new {Success = true , message = "Villa details updated" });
         }
@@ -212,21 +232,26 @@ namespace Villa_WebAPI.Controllers
             //villa with mentioned ID in this statement as we are updating it using
             //update method below and that one also has the villa model with id 6.
             //EF doesn't allow 1 model being tracked twice.
-            var villa = await _db.Villas.AsNoTracking().FirstOrDefaultAsync(i => i.id == id);
+            var villa = await _dbVilla.GetAsync(i => i.id == id, tracked: false);
 
             //Firsst we are changing villa to VillaUpdateDTO so that we can pass
             //to applyTo function below in the form of VillaUpdateDTO
-            VillaUpdateDTO villaDTO = new()
-            {
-                Amenity = villa.Amenity,
-                Details = villa.Details,
-                id = villa.id,
-                ImageUrl = villa.ImageUrl,
-                Name = villa.Name,
-                Occupancy = villa.Occupancy,
-                Rate = villa.Rate,
-                Sqft = villa.Sqft,
-            };
+            //VillaUpdateDTO villaDTO = new()
+            //{
+            //    Amenity = villa.Amenity,
+            //    Details = villa.Details,
+            //    id = villa.id,
+            //    ImageUrl = villa.ImageUrl,
+            //    Name = villa.Name,
+            //    Occupancy = villa.Occupancy,
+            //    Rate = villa.Rate,
+            //    Sqft = villa.Sqft,
+            //};
+
+
+            VillaUpdateDTO villaDTO = _mapper.Map<VillaUpdateDTO>(villa);
+
+
 
             if (villa == null)
             {
@@ -236,21 +261,23 @@ namespace Villa_WebAPI.Controllers
              and then if there is any error, we are storing it in the model state.*/
             patchDTO.ApplyTo(villaDTO,ModelState);
 
-            Villa model = new()
-            {
-                Amenity = villaDTO.Amenity,
-                Details = villaDTO.Details,
-                id = villaDTO.id,
-                ImageUrl = villaDTO.ImageUrl,
-                Name = villaDTO.Name,
-                Occupancy = villaDTO.Occupancy,
-                Rate = villaDTO.Rate,
-                Sqft = villaDTO.Sqft,
-            };
+            //Villa model = new()
+            //{
+            //    Amenity = villaDTO.Amenity,
+            //    Details = villaDTO.Details,
+            //    id = villaDTO.id,
+            //    ImageUrl = villaDTO.ImageUrl,
+            //    Name = villaDTO.Name,
+            //    Occupancy = villaDTO.Occupancy,
+            //    Rate = villaDTO.Rate,
+            //    Sqft = villaDTO.Sqft,
+            //};
 
 
-            _db.Villas.Update(model);
-            await _db.SaveChangesAsync();
+            Villa model = _mapper.Map<Villa>(villaDTO);
+
+            
+            await _dbVilla.UpdateAsync(model);
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
