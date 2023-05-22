@@ -9,10 +9,14 @@ namespace Villa_WebAPI
         public MappingConfig()
         {
             CreateMap<Villa, VillaDTO>().ReverseMap();
+            CreateMap<VillaNumber, VillaNumberDTO>().ReverseMap();
             //CreateMap<VillaDTO, Villa>();
 
             CreateMap<Villa, VillaCreateDTO>().ReverseMap();
+            CreateMap<VillaNumber, VillaNumberCreateDTO>().ReverseMap();
+
             CreateMap<Villa, VillaUpdateDTO>().ReverseMap();
+            CreateMap<VillaNumber, VillaNumberUpdateDTO>().ReverseMap();
 
         }
     }

@@ -105,12 +105,14 @@ namespace Villa_WebAPI.Controllers
                     //serilog
                     //_logger.Log("Get Villa Error with id " + id, "error");
                     _apiResponse.StatusCode = HttpStatusCode.BadRequest;
+                    _apiResponse.IsSuccess = false;
                     return BadRequest(_apiResponse);
                 }
                 var villa = await _dbVilla.GetAsync(i => i.id == id);
                 if (villa == null)
                 {
                     _apiResponse.StatusCode = HttpStatusCode.NotFound;
+                    _apiResponse.IsSuccess = false;
                     return NotFound(_apiResponse);
                 }
 
@@ -132,7 +134,7 @@ namespace Villa_WebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created/*, Type=typeof(VillaCreateDTO)*/)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<APIResponse>> CreateVilla([FromBody]VillaCreateDTO createVillaDTO)
         {
             try
@@ -153,11 +155,11 @@ namespace Villa_WebAPI.Controllers
                 //sending null object not allowed
                 if (createVillaDTO == null)
                 {
-                    _apiResponse.StatusCode = HttpStatusCode.NotImplemented;                    
+                    _apiResponse.StatusCode = HttpStatusCode.BadRequest;                    
                     return BadRequest(_apiResponse);
                 }
                 //if > 0 that means it is not a create request
-                //commenting below id after changing villaDTO obj to villaCreateDTO as it is not needed in this case
+                //commenting below id after changing villaDTO obj to villaCreateDTO as now, providing id is not needed.
                 //if (villaDTO.id > 0)
                 //{
                 //    //we are returning a custom status code that is not
@@ -205,6 +207,7 @@ namespace Villa_WebAPI.Controllers
         [HttpDelete("{id:int}", Name = "DeleteVilla")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<APIResponse>> DeleteVilla(int id)
         {
             try
@@ -239,6 +242,8 @@ namespace Villa_WebAPI.Controllers
 
         [HttpPut("{id:int}", Name = "UpdateVilla")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         
         public async Task<ActionResult<APIResponse>> UpdateVilla(int id, [FromBody] VillaUpdateDTO villaUpdateDTO)
         {
@@ -295,6 +300,8 @@ namespace Villa_WebAPI.Controllers
 
 
         [HttpPatch("{id:int}", Name = "UpdatePartialVilla")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<APIResponse>> UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDTO> patchDTO)
         {
             try
@@ -361,8 +368,8 @@ namespace Villa_WebAPI.Controllers
                     return BadRequest(ModelState);
                 }
 
-                _apiResponse.StatusCode = HttpStatusCode.NotFound;
-                _apiResponse.Response = _mapper.Map<VillaDTO>(villa);
+                _apiResponse.StatusCode = HttpStatusCode.OK;
+                _apiResponse.Response = _mapper.Map<VillaDTO>(model);
 
                 return Ok(_apiResponse);
             }
