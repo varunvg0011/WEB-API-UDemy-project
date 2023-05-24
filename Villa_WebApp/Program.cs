@@ -1,4 +1,6 @@
 using Villa_WebApp;
+using Villa_WebApp.Services;
+using Villa_WebApp.Services.IServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +8,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 var app = builder.Build();
+
+
+//adding httpClient on the VillaService
+builder.Services.AddHttpClient<IVillaServices, VillaService>();
+
+
+//Registering VillaService to dependency injection using the addScoped.
+//AddScoped is  - for a single request we will have one object of VillaService even if it is requested
+//10 times, same object will be used
+builder.Services.AddScoped<IVillaServices, VillaService>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
