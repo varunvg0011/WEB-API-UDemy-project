@@ -15,7 +15,7 @@ namespace Villa_WebApp.Services
         public VillaService(IHttpClientFactory httpClientFactory, IConfiguration configuration) : base(httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
-            villaUrl = configuration.GetValue<string>("ServiceUrls: VillaApiUrl");
+            villaUrl = configuration.GetValue<string>("ServiceUrls:VillaApiUrl");
         }
 
 
@@ -46,7 +46,7 @@ namespace Villa_WebApp.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.GET,
-                Url = villaUrl + "/api/VillaAPI/"
+                Url = villaUrl + "/api/VillaAPI"
 
             });
         }
