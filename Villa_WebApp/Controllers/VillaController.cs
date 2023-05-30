@@ -79,6 +79,32 @@ namespace Villa_WebApp.Controllers
             
         }
 
+        public async Task<IActionResult> DeleteVilla(int villaId)
+        {
+            var response = await _villaService.GetAsync<APIResponse>(villaId);
+            if (response != null && response.IsSuccess == true)
+            {
+                VillaDTO model = JsonConvert.DeserializeObject<VillaDTO>(Convert.ToString(response.Response));
+                return View(model);
+            }
+            return NotFound();
+        }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteVilla(VillaDTO villa)
+        {
+
+            {
+                var response = await _villaService.DeleteAsync<APIResponse>(villa.id);
+                if (response != null && response.IsSuccess)
+                {
+                    return RedirectToAction("IndexVilla");
+                }
+
+                return View(villa);
+            }
+
+        }
     }
 }

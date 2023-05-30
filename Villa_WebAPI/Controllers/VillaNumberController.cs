@@ -32,7 +32,7 @@ namespace Villa_WebAPI.Controllers
         {
             try
             {
-                IEnumerable<VillaNumber> allVillaNumbersList = await _dbVillaNumbers.GetAllAsync();
+                IEnumerable<VillaNumber> allVillaNumbersList = await _dbVillaNumbers.GetAllAsync(includeProperties: "Villa");
                 _apiResponse.Response = _mapper.Map<List<VillaNumberDTO>>(allVillaNumbersList);
                 _apiResponse.StatusCode = HttpStatusCode.OK;
             }

@@ -9,8 +9,10 @@ namespace Villa_WebAPI.Repository.IRepository
         Task RemoveAsync(T entity);
         Task SaveAsync();
 
-        Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null);
-        Task<T> GetAsync(Expression<Func<T, bool>> filter = null, bool tracked = true);
+        //here we are adding the third property to let it know that hey, we need to include
+        //this property as well.
+        Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties= null);
+        Task<T> GetAsync(Expression<Func<T, bool>> filter = null, bool tracked = true, string? includeProperties = null);
 
         
     }

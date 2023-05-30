@@ -18,7 +18,8 @@ builder.Services.AddHttpClient<IVillaServices, VillaService>();
 //10 times, same object will be used
 builder.Services.AddScoped<IVillaServices, VillaService>();
 
-
+builder.Services.AddHttpClient<IVillaNumberServices, VillaNumberService>();
+builder.Services.AddScoped<IVillaNumberServices, VillaNumberService>();
 
 var app = builder.Build();
 

@@ -5,14 +5,14 @@ using Villa_WebApp.Services.IServices;
 
 namespace Villa_WebApp.Services
 {
-    public class VillaNumberService : BaseService, IVillaNumberServices
+    public class VillaService : BaseService, IVillaServices
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private string villaUrl;
 
         //we are geting the value of httpClientFactory from base class BaseService and here we are
         //assigning it to _httpClientFactory
-        public VillaNumberService(IHttpClientFactory httpClientFactory, IConfiguration configuration) : base(httpClientFactory)
+        public VillaService(IHttpClientFactory httpClientFactory, IConfiguration configuration) : base(httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
             villaUrl = configuration.GetValue<string>("ServiceUrls:VillaApiUrl");
@@ -20,13 +20,13 @@ namespace Villa_WebApp.Services
 
 
         //now we are goinf to call those APIs
-        public Task<T> CreateAsync<T>(VillaNumberCreateDTO dto)
+        public Task<T> CreateAsync<T>(VillaCreateDTO dto)
         {
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.POST,
                 Data = dto,
-                Url = villaUrl + "/api/VillaNumberAPI"
+                Url = villaUrl + "/api/VillaAPI"
 
             });
         }
@@ -36,7 +36,7 @@ namespace Villa_WebApp.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.DELETE,                
-                Url = villaUrl + "/api/VillaNumberAPI/" + id
+                Url = villaUrl + "/api/VillaAPI/"+id
 
             });
         }
@@ -46,7 +46,7 @@ namespace Villa_WebApp.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.GET,
-                Url = villaUrl + "/api/VillaNumberAPI"
+                Url = villaUrl + "/api/VillaAPI"
 
             });
         }
@@ -57,18 +57,18 @@ namespace Villa_WebApp.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.GET,
-                Url = villaUrl + "/api/VillaNumberAPI/" + id
+                Url = villaUrl + "/api/VillaAPI/" + id
 
             });
         }
 
-        public Task<T> UpdateAsync<T>(VillaNumberUpdateDTO dto)
+        public Task<T> UpdateAsync<T>(VillaUpdateDTO dto)
         {
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.PUT,
                 Data = dto,
-                Url = villaUrl + "/api/VillaNumberAPI/" + dto.VillaNo
+                Url = villaUrl + "/api/VillaAPI/" + dto.id
 
             });
         }

@@ -11,6 +11,10 @@ namespace Villa_WebApp.Models.DTO
 
         [Required]
         public int VillaID { get; set; }
+
+        //this is the nvigation property to get Villa Name from Villa.
+        //This will be populated when we return Villa Number
+        public VillaDTO Villa { get; set; }
         public string SpecialDetails { get; set; }
     }
 }
