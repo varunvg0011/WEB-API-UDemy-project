@@ -29,7 +29,7 @@
             @foreach(var item in Model){
                 <tr>
                     <td>@item.Villa.Name</td>
-                    <td>@item.VillaID</td>
+                    <td>@item.VillaNo</td>
                     
                     <td>
                         <a asp-controller="Villa" asp-action="UpdateVillaNumber" asp-route-villaNo="@item.VillaNo" class="btn btn-outline-success"><i class="bi bi-pencil-square"></i></a>

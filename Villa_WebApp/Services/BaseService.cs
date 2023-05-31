@@ -78,7 +78,30 @@ namespace Villa_WebApp.Services
                 //after we send the apiResponse, we need to extract the APicontent from there
                 var apiContent = await apiResponse.Content.ReadAsStringAsync();
 
-                //then we need to deserialize that content
+
+
+                try
+                {
+                    //then we need to deserialize that content
+                    //and then it will deserialize and recognize "ErrorMessage" from APIResponse model and populate it
+                    //below the type has been taken as API response as we know our API has return type as APIResponse
+                    APIResponse ApiResponse = JsonConvert.DeserializeObject<APIResponse>(apiContent);
+                    if(apiResponse.StatusCode == System.Net.HttpStatusCode.BadRequest 
+                        || apiResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        ApiResponse.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                        ApiResponse.IsSuccess = false;
+                        var res = JsonConvert.SerializeObject(ApiResponse);
+                        var returnObj = JsonConvert.DeserializeObject<T>(res);
+                        return returnObj;
+                    }
+                }
+                catch (Exception e)
+                {
+                    //in case of generic behaviour
+                    var exceptionResponse = JsonConvert.DeserializeObject<T>(apiContent);
+                    return exceptionResponse;
+                }
                 var APIResponse = JsonConvert.DeserializeObject<T>(apiContent);
                 return APIResponse;
             }

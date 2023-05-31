@@ -146,7 +146,7 @@ namespace Villa_WebAPI.Controllers
 
                 if (await _dbVilla.GetAsync(u => u.Name.ToLower() == createVillaDTO.Name.ToLower()) != null)
                 {
-                    //ModelState.AddModelError("CustomError", "Villa already Exists!");
+                    //ModelState.AddModelError("ErrorMessages", "Villa already Exists!");
                     //return BadRequest(ModelState);
                     _apiResponse.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_apiResponse);
