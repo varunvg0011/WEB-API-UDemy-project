@@ -52,6 +52,13 @@ namespace Villa_WebApp.Controllers
                         Value = i.id.ToString()
                     }); ;
             }
+            else
+            {
+                if(response.ErrorMessages.Count > 0)
+                {
+                    ModelState.AddModelError("ErrorMessages", response.ErrorMessages.FirstOrDefault());
+                }
+            }
             return View(villaNoVM);
         }
 
