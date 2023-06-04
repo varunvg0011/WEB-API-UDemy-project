@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -56,7 +57,7 @@ namespace Villa_WebAPI.Controllers
         //and helps us to return any type of datatype and also the status code
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
-        
+        [Authorize]
         public async Task<ActionResult<APIResponse>> GetVillas() //changing the return type here from IEnumerable to 
         //public async Task<ActionResult<IEnumerable<VillaDTO>>> GetVillas()
         {
@@ -89,6 +90,7 @@ namespace Villa_WebAPI.Controllers
         /*Also, we are sending typeOf here as we have only defined
          ActionResult in the method return type instead of 
         ActionResult<T>*/
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -208,6 +210,7 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(Roles = "Custom")]
         public async Task<ActionResult<APIResponse>> DeleteVilla(int id)
         {
             try
