@@ -35,12 +35,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
 
-//add automapper service
-builder.Services.AddAutoMapper(typeof(MappingConfig));
+
 builder.Services.AddScoped<IVillaRepository, VillaRepository>();
 builder.Services.AddScoped<IVillaNumberRepository, VillaNumberRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-
+//add automapper service
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 var key = builder.Configuration.GetValue<string>("AppSettings:Secret");
 builder.Services.AddAuthentication(x => {
     //these are just constant name that are inside jwtbearer defaults
@@ -67,6 +67,9 @@ builder.Services.AddControllers
     .AddNewtonsoftJson().AddXmlDataContractSerializerFormatters();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+//Swagger take the value of whatever you typed in, saves it,
+//and uses that for all future requests to the API that require authorization.
 builder.Services.AddSwaggerGen(options =>
 //AddSecutiryDefinition basically describes how the API is protected to the generator swagger
 {
@@ -74,7 +77,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Description = "JWT authorization header using the bearer scheme. \r\n\r\n" +
         "Enter 'Bearer' [space] and then your token is the next input below. \r\n\r\n" +
-        "Example: \" Bearer 12345abcdef\"",
+        "Example: \"Bearer 12345abcdef\"",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Scheme = "Bearer"
@@ -112,9 +115,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

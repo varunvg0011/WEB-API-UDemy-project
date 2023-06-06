@@ -11,8 +11,6 @@ builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 //adding httpClient on the VillaService
 builder.Services.AddHttpClient<IVillaServices, VillaService>();
-
-
 //Registering VillaService to dependency injection using the addScoped.
 //AddScoped is  - for a single request we will have one object of VillaService even if it is requested
 //10 times, same object will be used
@@ -20,6 +18,11 @@ builder.Services.AddScoped<IVillaServices, VillaService>();
 
 builder.Services.AddHttpClient<IVillaNumberServices, VillaNumberService>();
 builder.Services.AddScoped<IVillaNumberServices, VillaNumberService>();
+
+
+builder.Services.AddHttpClient<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
 
 var app = builder.Build();
 
