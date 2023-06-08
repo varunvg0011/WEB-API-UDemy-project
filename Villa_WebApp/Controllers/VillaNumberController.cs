@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
+using Villa_Utility;
 using Villa_WebApp.Models;
 using Villa_WebApp.Models.DTO;
 using Villa_WebApp.Models.VM;
@@ -24,7 +26,7 @@ namespace Villa_WebApp.Controllers
         {
             List<VillaNumberDTO> list = new();
 
-            var response = await _villaNumberService.GetAllAsync<APIResponse>();
+            var response = await _villaNumberService.GetAllAsync<APIResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (response != null && response.IsSuccess == true)
             {
                 list = JsonConvert.DeserializeObject<List<VillaNumberDTO>>(Convert.ToString(response.Response));
@@ -36,13 +38,14 @@ namespace Villa_WebApp.Controllers
         //For this we need createVillaNumber DTO as well as a dropdown.
         //we can use viewbag/viewdata to pass on those but we will create a separate view Model
         //for it as VillaNumberCreateVM
+        [Authorize(Roles = "developer")]
         public async Task<IActionResult> CreateVillaNumber()
         {
             //in this method, we are populating the villaList and sending it along with the VillaNumber object
             VillaNumberCreateVM villaNoVM = new();
             //Now when we create VillaNumber, we need to populate the list of
             //Villas in VillaNumberCreateVM:
-            var response = await _villaService.GetAllAsync<APIResponse>();
+            var response = await _villaService.GetAllAsync<APIResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (response != null && response.IsSuccess == true)
             {
                 villaNoVM.VillaList = JsonConvert.DeserializeObject<List<VillaDTO>>
@@ -58,11 +61,12 @@ namespace Villa_WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "developer")]
         public async Task<IActionResult> CreateVillaNumber(VillaNumberCreateVM villaNoVM)
         {
             if (ModelState.IsValid)
             {
-                var response = await _villaNumberService.CreateAsync<APIResponse>(villaNoVM.VillaNumber);
+                var response = await _villaNumberService.CreateAsync<APIResponse>(villaNoVM.VillaNumber, HttpContext.Session.GetString(StaticDetails.SessionToken));
                 if (response != null && response.IsSuccess == true)
                 {
                     return RedirectToAction("IndexVillaNumber");
@@ -78,7 +82,7 @@ namespace Villa_WebApp.Controllers
             }
 
            //if the model state is not true, we need to repopulate the dropdown again
-            var resp = await _villaService.GetAllAsync<APIResponse>();
+            var resp = await _villaService.GetAllAsync<APIResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if(resp != null && resp.IsSuccess)
             {
                 villaNoVM.VillaList = JsonConvert.DeserializeObject<List<VillaDTO>>
@@ -94,11 +98,11 @@ namespace Villa_WebApp.Controllers
         }
 
 
-
+        [Authorize(Roles = "developer")]
         public async Task<IActionResult> UpdateVillaNumber(int villaNo)
         {
             VillaNumberUpdateVM villaNoVM = new();
-            var response = await _villaNumberService.GetAsync<APIResponse>(villaNo);
+            var response = await _villaNumberService.GetAsync<APIResponse>(villaNo, HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (response != null && response.IsSuccess == true)
             {
                 VillaNumberDTO model = JsonConvert.DeserializeObject<VillaNumberDTO>(Convert.ToString(response.Response));
@@ -107,7 +111,7 @@ namespace Villa_WebApp.Controllers
 
 
             //for the dropdown and poulating villaList
-            response = await _villaService.GetAllAsync<APIResponse>();
+            response = await _villaService.GetAllAsync<APIResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (response != null && response.IsSuccess == true)
             {
                 villaNoVM.VillaList = JsonConvert.DeserializeObject<List<VillaDTO>>
@@ -124,11 +128,12 @@ namespace Villa_WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "developer")]
         public async Task<IActionResult> UpdateVillaNumber(VillaNumberUpdateVM model)
         {
             if (ModelState.IsValid)
             {
-                var response = await _villaNumberService.UpdateAsync<APIResponse>(model.VillaNumber);
+                var response = await _villaNumberService.UpdateAsync<APIResponse>(model.VillaNumber, HttpContext.Session.GetString(StaticDetails.SessionToken));
                 if (response != null && response.IsSuccess == true)
                 {
                     return RedirectToAction("IndexVillaNumber");
@@ -136,7 +141,7 @@ namespace Villa_WebApp.Controllers
             }
 
             //if the model state is not true, we need to repopulate the dropdown again
-            var resp = await _villaService.GetAllAsync<APIResponse>();
+            var resp = await _villaService.GetAllAsync<APIResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (resp != null && resp.IsSuccess)
             {
                 model.VillaList = JsonConvert.DeserializeObject<List<VillaDTO>>
@@ -151,18 +156,20 @@ namespace Villa_WebApp.Controllers
 
         }
 
+
+        [Authorize(Roles = "developer")]
         public async Task<IActionResult> DeleteVillaNumber(int villaNo)
         {
             VillaNumberDeleteVM villaNoVM = new();
             //getting the villa we want to delete
-            var response = await _villaNumberService.GetAsync<APIResponse>(villaNo);
+            var response = await _villaNumberService.GetAsync<APIResponse>(villaNo, HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (response != null && response.IsSuccess == true)
             {
                 VillaNumberDTO model = JsonConvert.DeserializeObject<VillaNumberDTO>(Convert.ToString(response.Response));
                 return View(_mapper.Map<VillaNumberUpdateDTO>(model));
             }
 
-            response = await _villaService.GetAllAsync<APIResponse>();
+            response = await _villaService.GetAllAsync<APIResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (response != null && response.IsSuccess == true)
             {
                 villaNoVM.VillaList = JsonConvert.DeserializeObject<List<VillaDTO>>
@@ -179,10 +186,11 @@ namespace Villa_WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "developer")]
         public async Task<IActionResult> DeleteVillaNumber(VillaNumberDeleteVM villaNoVM)
         {
             {
-                var response = await _villaNumberService.DeleteAsync<APIResponse>(villaNoVM.VillaNumber.VillaNo);
+                var response = await _villaNumberService.DeleteAsync<APIResponse>(villaNoVM.VillaNumber.VillaNo, HttpContext.Session.GetString(StaticDetails.SessionToken));
                 if (response != null && response.IsSuccess)
                 {
                     return RedirectToAction("IndexNumberVilla");

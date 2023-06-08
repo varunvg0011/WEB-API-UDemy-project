@@ -1,6 +1,7 @@
 
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -41,6 +42,22 @@ builder.Services.AddScoped<IVillaNumberRepository, VillaNumberRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 //add automapper service
 builder.Services.AddAutoMapper(typeof(MappingConfig));
+
+//this is to add versioning in API
+builder.Services.AddApiVersioning(options =>
+{
+    //assume the default version when its not specified
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    //but we also have to define whats the default version
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+});
+
+//specify which version of API we are hitting
+builder.Services.AddVersionedApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+});
+
 var key = builder.Configuration.GetValue<string>("AppSettings:Secret");
 builder.Services.AddAuthentication(x => {
     //these are just constant name that are inside jwtbearer defaults

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using Villa_Utility;
 using Villa_WebApp.Models;
@@ -69,6 +70,13 @@ namespace Villa_WebApp.Services
                 //HttpResponseMessage and decalre as null as default and give it value after that
 
                 HttpResponseMessage apiResponse = null;
+
+
+                //check for token. This way when we are passing the token, api can validate
+                if (!string.IsNullOrEmpty(apiRequest.Token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiRequest.Token);
+                }
 
                 //Then finally, we are calling the API End point by making the call using SendAsync
                 //method and pass the message as parameter that we configured in above code
