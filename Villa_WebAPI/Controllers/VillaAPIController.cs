@@ -58,7 +58,8 @@ namespace Villa_WebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]        
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [Authorize]
         public async Task<ActionResult<APIResponse>> GetVillas() //changing the return type here from IEnumerable to 
         //public async Task<ActionResult<IEnumerable<VillaDTO>>> GetVillas()
         {
@@ -91,7 +92,7 @@ namespace Villa_WebAPI.Controllers
         /*Also, we are sending typeOf here as we have only defined
          ActionResult in the method return type instead of 
         ActionResult<T>*/
-        
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
@@ -137,7 +138,6 @@ namespace Villa_WebAPI.Controllers
 
 
         [HttpPost]
-        [Authorize(Roles = "developer")]
         [ProducesResponseType(StatusCodes.Status201Created/*, Type=typeof(VillaCreateDTO)*/)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -216,7 +216,7 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [Authorize(Roles = "developer")]
+        [Authorize(Roles = "CUSTOM")]
         public async Task<ActionResult<APIResponse>> DeleteVilla(int id)
         {
             try
@@ -253,7 +253,7 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [Authorize(Roles = "developer")]
+        
         public async Task<ActionResult<APIResponse>> UpdateVilla(int id, [FromBody] VillaUpdateDTO villaUpdateDTO)
         {
             try

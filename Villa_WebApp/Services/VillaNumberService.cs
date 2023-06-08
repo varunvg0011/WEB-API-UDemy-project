@@ -20,59 +20,55 @@ namespace Villa_WebApp.Services
 
 
         //now we are goinf to call those APIs
-        public Task<T> CreateAsync<T>(VillaCreateDTO dto, string token)
+        public Task<T> CreateAsync<T>(VillaCreateDTO dto)
         {
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.POST,
                 Data = dto,
-                Url = villaUrl + "/api/VillaAPI",
-                Token = token
+                Url = villaUrl + "/api/VillaAPI"
+
             });
         }
 
-        public Task<T> DeleteAsync<T>(int id, string token)
+        public Task<T> DeleteAsync<T>(int id)
         {
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.DELETE,                
-                Url = villaUrl + "/api/VillaAPI/"+id,
-                Token = token
+                Url = villaUrl + "/api/VillaAPI/"+id
 
             });
         }
 
-        public Task<T> GetAllAsync<T>(string token)
+        public Task<T> GetAllAsync<T>()
         {
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.GET,
-                Url = villaUrl + "/api/VillaAPI",
-                Token = token
+                Url = villaUrl + "/api/VillaAPI"
 
             });
         }
 
         //this is caling the Send Async method in 
-        public Task<T> GetAsync<T>(int id, string token)
+        public Task<T> GetAsync<T>(int id)
         {
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.GET,
-                Url = villaUrl + "/api/VillaAPI/" + id,
-                Token = token
+                Url = villaUrl + "/api/VillaAPI/" + id
 
             });
         }
 
-        public Task<T> UpdateAsync<T>(VillaUpdateDTO dto, string token)
+        public Task<T> UpdateAsync<T>(VillaUpdateDTO dto)
         {
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.PUT,
                 Data = dto,
-                Url = villaUrl + "/api/VillaAPI/" + dto.id,
-                Token = token
+                Url = villaUrl + "/api/VillaAPI/" + dto.id
 
             });
         }

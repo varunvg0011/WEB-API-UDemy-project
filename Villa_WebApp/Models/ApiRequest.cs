@@ -11,6 +11,5 @@ namespace Villa_WebApp.Models
         /*While sending th request we also need to define the URL*/
         public string Url { get; set; }
         public object Data { get; set; }
-        public string Token { get; set; }
     }
 }
