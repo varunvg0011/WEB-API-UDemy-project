@@ -1,4 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Security.Claims;
+using Villa_Utility;
 using Villa_WebApp.Models;
 using Villa_WebApp.Models.DTO;
 using Villa_WebApp.Services.IServices;
@@ -22,8 +27,27 @@ namespace Villa_WebApp.Controllers
         
         [HttpPost]
         public async Task<IActionResult> Login(LoginRequestDTO loginDTOObj)
-        {           
-            return View();
+        {
+            APIResponse response = await _authService.LoginAsync<APIResponse>(loginDTOObj);
+            if(response != null && response.IsSuccess)
+            {
+                LoginResponseDTO model = JsonConvert.DeserializeObject<LoginResponseDTO>(Convert.ToString(response.Response));
+
+                var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+                identity.AddClaim(new Claim(ClaimTypes.Name, model.User.Username));
+                identity.AddClaim(new Claim(ClaimTypes.Role, model.User.Role));
+                var principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                
+                HttpContext.Session.SetString(StaticDetails.SessionToken, model.Token);
+                return RedirectToAction("Index", "Home");
+
+            }
+            else
+            {
+                ModelState.AddModelError("CustomError", response.ErrorMessages.FirstOrDefault());
+                return View(loginDTOObj);
+            }
         }
 
         [HttpGet]
@@ -46,9 +70,11 @@ namespace Villa_WebApp.Controllers
         }
 
         [HttpGet]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            return View();
+            await HttpContext.SignOutAsync();
+            HttpContext.Session.SetString(StaticDetails.SessionToken, "");
+            return RedirectToAction("Index","Home");
         }
 
 

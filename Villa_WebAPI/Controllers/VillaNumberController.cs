@@ -6,11 +6,22 @@ using Villa_WebAPI.Models.DTO;
 using Villa_WebAPI.Repository;
 using System.Net;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Villa_WebAPI.Controllers
 {
-    [Route("api/VillaNumberAPI")]
-    [ApiController]   
+    //specifying which version of API we want to invoke. we specify the API version in program.cs
+    //to make swagger hit that API version
+
+    [Route("api/v{version:apiVersion}/VillaNumberAPI")]
+    [ApiController] 
+    //Here we are specifying APi version 1.0 as we are using 1.0, if we specify other
+    //API version it wont work
+    [ApiVersion("1.0")]
+    //when we are using 2 versions of api in 1 project we have to specify which one of Get() methd 
+    //is using which api version and then we use [MapToApiVersion] attribute to map tho
+    //se APIs
+    [ApiVersion("2.0")]
     public class VillaNumberController : Controller
     {
 
@@ -27,6 +38,7 @@ namespace Villa_WebAPI.Controllers
         }
 
         [HttpGet]
+        [MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(APIResponse))]
         public async Task<ActionResult<APIResponse>> GetVillaNumbers()
         {
@@ -42,6 +54,13 @@ namespace Villa_WebAPI.Controllers
                 _apiResponse.ErrorMessages = new List<string>() { ex.ToString() };
             }
             return _apiResponse;
+        }
+
+        [MapToApiVersion("2.0")]
+        [HttpGet]
+        public IEnumerable<string> Get()
+        {
+            return new string[] { "value1", "value2" };
         }
 
 
@@ -85,6 +104,7 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(Roles = "developer")]
         public async Task<ActionResult<APIResponse>> CreateVillaNumber([FromBody]VillaNumberCreateDTO villaNoCreate)
         {
             try
@@ -130,6 +150,7 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Roles = "developer")]
         public async Task<ActionResult<APIResponse>> DeleteVillaNumber(int villaNumber)
         {
             try
@@ -164,6 +185,7 @@ namespace Villa_WebAPI.Controllers
 
         [HttpPut("{villaNo:int}", Name = "UpdateVillaNumber")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "developer")]
         public async Task<ActionResult<APIResponse>> UpdateVillaNumber(int villaNo, [FromBody] VillaNumberUpdateDTO villaNoUpdateDTO)
         {
             
