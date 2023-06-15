@@ -106,13 +106,13 @@ namespace Villa_WebApp.Controllers
             if (response != null && response.IsSuccess == true)
             {
                 VillaNumberDTO model = JsonConvert.DeserializeObject<VillaNumberDTO>(Convert.ToString(response.Response));
-                return View(_mapper.Map<VillaNumberUpdateDTO>(model));
+                villaNoVM.VillaNumber= _mapper.Map<VillaNumberUpdateDTO>(model);
             }
 
 
-            //for the dropdown and poulating villaList
+            //for the dropdown and populating villaList
             response = await _villaService.GetAllAsync<APIResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
-            if (response != null && response.IsSuccess == true)
+            if (response != null && response.IsSuccess)
             {
                 villaNoVM.VillaList = JsonConvert.DeserializeObject<List<VillaDTO>>
                     (Convert.ToString(response.Response)).Select(i => new SelectListItem
@@ -166,7 +166,7 @@ namespace Villa_WebApp.Controllers
             if (response != null && response.IsSuccess == true)
             {
                 VillaNumberDTO model = JsonConvert.DeserializeObject<VillaNumberDTO>(Convert.ToString(response.Response));
-                return View(_mapper.Map<VillaNumberUpdateDTO>(model));
+                villaNoVM.VillaNumber =  model;
             }
 
             response = await _villaService.GetAllAsync<APIResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
@@ -193,7 +193,7 @@ namespace Villa_WebApp.Controllers
                 var response = await _villaNumberService.DeleteAsync<APIResponse>(villaNoVM.VillaNumber.VillaNo, HttpContext.Session.GetString(StaticDetails.SessionToken));
                 if (response != null && response.IsSuccess)
                 {
-                    return RedirectToAction("IndexNumberVilla");
+                    return RedirectToAction("IndexVillaNumber");
                 }
 
                 return View(villaNoVM);

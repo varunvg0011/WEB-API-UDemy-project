@@ -14,22 +14,25 @@ namespace Villa_WebAPI.Controllers
     //to make swagger hit that API version
 
     [Route("api/v{version:apiVersion}/VillaNumberAPI")]
-    [ApiController] 
+    [ApiController]
     //Here we are specifying APi version 1.0 as we are using 1.0, if we specify other
     //API version it wont work
-    [ApiVersion("1.0")]
     //when we are using 2 versions of api in 1 project we have to specify which one of Get() methd 
     //is using which api version and then we use [MapToApiVersion] attribute to map tho
     //se APIs
-    [ApiVersion("2.0")]
-    public class VillaNumberController : Controller
+    [ApiVersion("1.0")]
+    //This is to specify to the developers that this API version will be deprected soon so we need
+    //to update it soon
+    //[ApiVersion("1.0", Deprecated =true)]
+
+    public class VillaNumberV1APIController : Controller
     {
 
         private readonly IMapper _mapper;
         private readonly IVillaNumberRepository _dbVillaNumbers;
         private readonly IVillaRepository _dbVilla ;
         protected APIResponse _apiResponse;
-        public VillaNumberController(IMapper mapper, IVillaNumberRepository dbVillaNumbers, IVillaRepository dbVilla)
+        public VillaNumberV1APIController(IMapper mapper, IVillaNumberRepository dbVillaNumbers, IVillaRepository dbVilla)
         {
             _mapper = mapper;
             _dbVillaNumbers = dbVillaNumbers;
@@ -37,8 +40,7 @@ namespace Villa_WebAPI.Controllers
             _dbVilla = dbVilla;
         }
 
-        [HttpGet]
-        [MapToApiVersion("1.0")]
+        [HttpGet]       
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(APIResponse))]
         public async Task<ActionResult<APIResponse>> GetVillaNumbers()
         {
@@ -56,11 +58,10 @@ namespace Villa_WebAPI.Controllers
             return _apiResponse;
         }
 
-        [MapToApiVersion("2.0")]
-        [HttpGet]
+        [HttpGet("GetString")]
         public IEnumerable<string> Get()
         {
-            return new string[] { "value1", "value2" };
+            return new string[] { "string1", "string2" };
         }
 
 

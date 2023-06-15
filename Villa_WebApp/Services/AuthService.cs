@@ -24,7 +24,7 @@ namespace Villa_WebApp.Services
             {
                 ApiType = StaticDetails.ApiType.POST,
                 Data = obj,
-                Url = villaUrl + "/api/UserAuth/login"
+                Url = villaUrl + "/api/v1/UserAuth/login"
 
             });
         }
@@ -35,7 +35,7 @@ namespace Villa_WebApp.Services
             {
                 ApiType = StaticDetails.ApiType.POST,
                 Data = objToCreate,
-                Url = villaUrl + "/api/UserAuth/register"
+                Url = villaUrl + "/api/v1/UserAuth/register"
 
             });
         }

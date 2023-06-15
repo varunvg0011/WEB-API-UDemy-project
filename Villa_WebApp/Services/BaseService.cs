@@ -94,8 +94,8 @@ namespace Villa_WebApp.Services
                     //and then it will deserialize and recognize "ErrorMessage" from APIResponse model and populate it
                     //below the type has been taken as API response as we know our API has return type as APIResponse
                     APIResponse ApiResponse = JsonConvert.DeserializeObject<APIResponse>(apiContent);
-                    if(apiResponse.StatusCode == System.Net.HttpStatusCode.BadRequest 
-                        || apiResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    if(ApiResponse!=null && (apiResponse.StatusCode == System.Net.HttpStatusCode.BadRequest 
+                        || apiResponse.StatusCode == System.Net.HttpStatusCode.NotFound))
                     {
                         ApiResponse.StatusCode = System.Net.HttpStatusCode.BadRequest;
                         ApiResponse.IsSuccess = false;

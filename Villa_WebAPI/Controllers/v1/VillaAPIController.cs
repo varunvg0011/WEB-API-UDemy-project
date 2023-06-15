@@ -13,7 +13,8 @@ using Villa_WebAPI.Repository;
 
 namespace Villa_WebAPI.Controllers
 {
-    [Route("api/VillaAPI")]
+    [Route("api/v{version:apiVersion}/VillaAPI")]
+    [ApiVersion("1.0")]
     //this below attribute helps to bind data annotations with model entities
     //without this, out datat annotations will not work
     [ApiController]
@@ -58,8 +59,17 @@ namespace Villa_WebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]        
-        public async Task<ActionResult<APIResponse>> GetVillas() //changing the return type here from IEnumerable to 
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]       
+        //Cache the response for 30 seconds. This way if we have 50 requests in 1 minutes, it will
+        //fetch only 2 requests from backend, rest it will fetch from the cache area
+        //[ResponseCache(Duration = 30)]
+        
+        //Add the cache profiler which we added in program.cs
+        [ResponseCache(CacheProfileName ="Default30")]
+        //incase we just want to fetch the occupancy of the villas, then we use filter and parameter in this
+        public async Task<ActionResult<APIResponse>> GetVillas([FromQuery(Name = "filterOccupancy")]int? occupancy,
+            [FromQuery] string? search) //changing the return type here from IEnumerable to 
+
         //public async Task<ActionResult<IEnumerable<VillaDTO>>> GetVillas()
         {
             //default logger
@@ -69,7 +79,21 @@ namespace Villa_WebAPI.Controllers
             //_logger.Log("Getting all Villas", "");
             try
             {
-                IEnumerable<Villa> allVillas = await _dbVilla.GetAllAsync();
+                IEnumerable<Villa> allVillas;
+                if (occupancy > 0)
+                {
+                    allVillas = await _dbVilla.GetAllAsync(u=>u.Occupancy == occupancy);
+                }
+                else
+                {
+                    allVillas = await _dbVilla.GetAllAsync();
+                }
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    allVillas = allVillas.Where(u => /*u.Amenity.ToLower().Contains(search) ||*/ u.Name.ToLower().Contains(search));
+                }
+                
                 _apiResponse.Response = _mapper.Map<List<VillaDTO>>(allVillas);
                 _apiResponse.StatusCode = HttpStatusCode.OK;
                 return Ok(_apiResponse);
@@ -97,6 +121,9 @@ namespace Villa_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        //to specify that request cannot be cached. no store and no cache both means it will fetch data
+        //from daa
+        //[ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<ActionResult<APIResponse>> GetVilla(int id)
         //public async Task<ActionResult<VillaDTO>> GetVilla(int id)
         {

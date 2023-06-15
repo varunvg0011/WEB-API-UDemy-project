@@ -7,8 +7,12 @@ using Villa_WebAPI.Repository.IRepository;
 
 namespace Villa_WebAPI.Controllers
 {
-    [Route("api/UserAuth")]
+    [Route("api/v{version:apiVersion}/UserAuth")]
     [ApiController]
+    //[ApiVersion("1.0")]
+    //This means that this controller will show up in all versions regardless of what version API
+    //we are opening
+    [ApiVersionNeutral]
     public class UserController : Controller
     {
         private readonly IUserRepository _userRepo;

@@ -26,7 +26,7 @@ namespace Villa_WebApp.Services
             {
                 ApiType = StaticDetails.ApiType.POST,
                 Data = dto,
-                Url = villaUrl + "/api/VillaAPI",
+                Url = villaUrl + "/api/v1/VillaAPI",
                 Token = token
             });
         }
@@ -36,7 +36,7 @@ namespace Villa_WebApp.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.DELETE,                
-                Url = villaUrl + "/api/VillaAPI/"+id,
+                Url = villaUrl + "/api/v1/VillaAPI/" + id,
                 Token = token
 
             });
@@ -47,7 +47,7 @@ namespace Villa_WebApp.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.GET,
-                Url = villaUrl + "/api/VillaAPI",
+                Url = villaUrl + "/api/v1/VillaAPI",
                 Token = token
 
             });
@@ -59,7 +59,7 @@ namespace Villa_WebApp.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = StaticDetails.ApiType.GET,
-                Url = villaUrl + "/api/VillaAPI/" + id,
+                Url = villaUrl + "/api/v1/VillaAPI/" + id,
                 Token = token
 
             });
@@ -71,7 +71,7 @@ namespace Villa_WebApp.Services
             {
                 ApiType = StaticDetails.ApiType.PUT,
                 Data = dto,
-                Url = villaUrl + "/api/VillaAPI/" + dto.id,
+                Url = villaUrl + "/api/v1/VillaAPI/" + dto.id,
                 Token = token
 
             });

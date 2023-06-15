@@ -36,7 +36,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
 
-
+//enable caching
+builder.Services.AddResponseCaching();
 builder.Services.AddScoped<IVillaRepository, VillaRepository>();
 builder.Services.AddScoped<IVillaNumberRepository, VillaNumberRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -50,12 +51,14 @@ builder.Services.AddApiVersioning(options =>
     options.AssumeDefaultVersionWhenUnspecified = true;
     //but we also have to define whats the default version
     options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.ReportApiVersions = true;
 });
 
 //specify which version of API we are hitting
 builder.Services.AddVersionedApiExplorer(options =>
 {
     options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
 });
 
 var key = builder.Configuration.GetValue<string>("AppSettings:Secret");
@@ -78,8 +81,13 @@ builder.Services.AddAuthentication(x => {
     }); ;
 
 builder.Services.AddControllers
-    (option => { 
+    (option => {
         //option.ReturnHttpNotAcceptable = true;
+        //add general caching of 30 seconds for the project
+        option.CacheProfiles.Add("Default30", new CacheProfile()
+        {
+            Duration = 30
+        });
     })
     .AddNewtonsoftJson().AddXmlDataContractSerializerFormatters();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -117,6 +125,45 @@ builder.Services.AddSwaggerGen(options =>
             new List<string>()
         }
     });
+
+    //add v1 for swagger. here v1 should match with v1 in "/swagger/v1/swagger.json" that we
+    //have defined at bottom in our URL
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1.0",
+        Title = "Villa_API",
+        Description = "API to manage Villa",
+        TermsOfService = new Uri("https://www.example.com/terms"),
+        Contact = new OpenApiContact
+        {
+            Name = "Dotnetmastery",
+            Url = new Uri("https://www.dotnetmastery.com")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Example Licence",
+            Url = new Uri("https://www.example.com")
+        }
+    }) ;
+
+    options.SwaggerDoc("v2", new OpenApiInfo
+    {
+        Version = "v2.0",
+        Title = "Villa_API",
+        Description = "API to manage Villa",
+        TermsOfService = new Uri("https://www.example.com/terms"),
+        Contact = new OpenApiContact
+        {
+            Name = "Dotnetmastery",
+            Url = new Uri("https://www.dotnetmastery.com")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Example Licence",
+            Url = new Uri("https://www.example.com")
+        }
+    });
+
 });
 
 
@@ -128,7 +175,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    //add v1 for swagger
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "VillaAPIV1");
+        options.SwaggerEndpoint("/swagger/v2/swagger.json", "VillaAPIV2");
+    });
 }
 
 app.UseHttpsRedirection();
