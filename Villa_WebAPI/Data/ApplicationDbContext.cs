@@ -1,15 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Villa_WebAPI.Models;
 
 namespace Villa_WebAPI.Data
 {
-    public class ApplicationDbContext: DbContext
+    public class ApplicationDbContext: IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options):base(options)
         {
 
         }
 
+
+        //adding a navigation propeerty for AppUser
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<LocalUser> LocalUsers { get; set; }
         public DbSet<Villa> Villas { get; set; }
         public DbSet<VillaNumber> VillaNumbers { get; set; }
@@ -18,6 +22,10 @@ namespace Villa_WebAPI.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //This we are callling here because keys of Identity table are mapped in the
+            //OnModelCreating and this will create all the key mappings that we needed
+            //After this if we do add-migration this will add all the tables related to identity
+            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Villa>().HasData(
                 new Villa
                 {

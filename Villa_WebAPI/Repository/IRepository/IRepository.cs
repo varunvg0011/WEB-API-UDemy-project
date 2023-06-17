@@ -11,7 +11,9 @@ namespace Villa_WebAPI.Repository.IRepository
 
         //here we are adding the third property to let it know that hey, we need to include
         //this property as well.
-        Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties= null);
+        //adding pageNo and pageSize for pagination
+        Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties= null,
+            int pageSize = 0, int pageNumber = 1);
         Task<T> GetAsync(Expression<Func<T, bool>> filter = null, bool tracked = true, string? includeProperties = null);
 
         

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,17 +15,20 @@ namespace Villa_WebAPI.Repository
     {
         private readonly ApplicationDbContext _db;
         private readonly IMapper _mapper;
+        private readonly UserManager<ApplicationUser> _userManager;
         private string secretKey;
 
-        public UserRepository(ApplicationDbContext db, IMapper mapper, IConfiguration configuration)
+        //userNamager is a built-in helper method used to accomplish Identity related tasks
+        public UserRepository(ApplicationDbContext db, IMapper mapper, IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
             _db= db;
             _mapper = mapper;
             secretKey = configuration.GetValue<string>("AppSettings:Secret");
+            _userManager = userManager;
         }
         public bool IsUniqueUser(string username)
         {
-            var user = _db.LocalUsers.FirstOrDefault(x => x.Username == username);
+            var user = _db.ApplicationUsers.FirstOrDefault(x => x.UserName == username);
             if(user == null)
             {
                 return true;
@@ -34,19 +38,27 @@ namespace Villa_WebAPI.Repository
 
         public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO)
         {
-            var user = _db.LocalUsers.FirstOrDefault(x => x.Username == loginRequestDTO.Username &&
-            x.Password.ToLower() == loginRequestDTO.Password.ToLower());
+            //var user = _db.LocalUsers.FirstOrDefault(x => x.Username == loginRequestDTO.Username &&
+            //x.Password.ToLower() == loginRequestDTO.Password.ToLower());
+
+            var user = _db.ApplicationUsers
+                .FirstOrDefault(x => x.UserName.ToLower() == loginRequestDTO.Username.ToLower());
+
+
+            bool isValidPass = await _userManager.CheckPasswordAsync(user, loginRequestDTO.Password);
 
             //incase the user details entered does not match the details in database
-            if (user == null)
+            if (user == null || isValidPass == false)
             {
                 return new LoginResponseDTO()
                 {
                     Token = "",
-                    User = user,
+                    User = null,
                 };
             }
 
+            //get all roles assigned to the user
+            var roles = await _userManager.GetRolesAsync(user);
             //on succesfull login, generate the JWT token
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(secretKey);
@@ -56,8 +68,15 @@ namespace Villa_WebAPI.Repository
             {
                 Subject = new ClaimsIdentity(new Claim[]
                     {
-                        new Claim(ClaimTypes.Name, user.id.ToString()),
-                        new Claim(ClaimTypes.Role, user.Role)
+                        //new Claim(ClaimTypes.Name, user.id.ToString()),
+                        //new Claim(ClaimTypes.Role, user.Role)
+
+                        //after adding identity roles will have its own table i.e. AspNetRole so 
+                        //commenting above
+
+                        new Claim(ClaimTypes.Name, user.Id.ToString()),
+                        new Claim(ClaimTypes.Role , roles.FirstOrDefault())
+
                     }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -67,18 +86,46 @@ namespace Villa_WebAPI.Repository
             LoginResponseDTO loginResp = new LoginResponseDTO()
             {
                 Token = tokenHandler.WriteToken(token),
-                User = user,
+                User = _mapper.Map<UserDTO>(user),
+                Role = roles.FirstOrDefault()
             };
             return loginResp;
         }
 
-        public async Task<LocalUser> Register(RegistrationRequestDTO registrationRequestDTO)
+        public async Task<UserDTO> Register(RegistrationRequestDTO registrationRequestDTO)
         {
-            LocalUser newUser = _mapper.Map<LocalUser>(registrationRequestDTO);
-            await _db.LocalUsers.AddAsync(newUser);
-            await _db.SaveChangesAsync();
-            newUser.Password = "";
-            return newUser;
+            ApplicationUser newUser = new()
+            {
+                UserName = registrationRequestDTO.Username,
+                Email = registrationRequestDTO.Username,
+                NormalizedEmail = registrationRequestDTO.Username.ToUpper(),
+                Name = registrationRequestDTO.Name
+            };
+
+
+            try
+            {
+                var result = await _userManager.CreateAsync(newUser, registrationRequestDTO.Password);
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(newUser, "admin");
+                    var userToReturn = _db.ApplicationUsers.FirstOrDefault(x => x.UserName == registrationRequestDTO.Username);
+                    return _mapper.Map<UserDTO>(userToReturn);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+            //await _db.LocalUsers.AddAsync(newUser);
+            //await _db.SaveChangesAsync();
+            
+            return new UserDTO();
         }
     }
 }

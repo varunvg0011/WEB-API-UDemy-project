@@ -19,6 +19,7 @@ namespace Villa_WebAPI
             CreateMap<VillaNumber, VillaNumberUpdateDTO>().ReverseMap();
 
             CreateMap<RegistrationRequestDTO, LocalUser>().ReverseMap();
+            CreateMap<ApplicationUser, UserDTO>().ReverseMap();
 
         }
     }

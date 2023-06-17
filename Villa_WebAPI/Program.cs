@@ -1,6 +1,7 @@
 
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +11,7 @@ using System.Text;
 using Villa_WebAPI;
 using Villa_WebAPI.Data;
 using Villa_WebAPI.Logging;
+using Villa_WebAPI.Models;
 using Villa_WebAPI.Repository;
 using Villa_WebAPI.Repository.IRepository;
 
@@ -28,6 +30,12 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.Host.UseSerilog();
 
 
+//Identity here is used to secure our API
+//IdentityUser is our user and IdentityRole is our default role
+//But then we will be using ApplicationUser because typically we will be having some
+//properties for user such as name as we have defined inside ApplicationUser
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 
 //add entityFrameword connection string

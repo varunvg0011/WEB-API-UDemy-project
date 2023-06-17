@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using System.Text.Json;
 using Villa_WebAPI.Data;
 using Villa_WebAPI.Logging;
 using Villa_WebAPI.Models;
@@ -68,7 +69,7 @@ namespace Villa_WebAPI.Controllers
         [ResponseCache(CacheProfileName ="Default30")]
         //incase we just want to fetch the occupancy of the villas, then we use filter and parameter in this
         public async Task<ActionResult<APIResponse>> GetVillas([FromQuery(Name = "filterOccupancy")]int? occupancy,
-            [FromQuery] string? search) //changing the return type here from IEnumerable to 
+            [FromQuery] string? search, int pageSize =0, int pageNumber =1) //changing the return type here from IEnumerable to 
 
         //public async Task<ActionResult<IEnumerable<VillaDTO>>> GetVillas()
         {
@@ -82,7 +83,7 @@ namespace Villa_WebAPI.Controllers
                 IEnumerable<Villa> allVillas;
                 if (occupancy > 0)
                 {
-                    allVillas = await _dbVilla.GetAllAsync(u=>u.Occupancy == occupancy);
+                    allVillas = await _dbVilla.GetAllAsync(u=>u.Occupancy == occupancy, pageSize:pageSize, pageNumber:pageNumber);
                 }
                 else
                 {
@@ -93,6 +94,15 @@ namespace Villa_WebAPI.Controllers
                 {
                     allVillas = allVillas.Where(u => /*u.Amenity.ToLower().Contains(search) ||*/ u.Name.ToLower().Contains(search));
                 }
+
+                Pagination pagination = new()
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
+
                 
                 _apiResponse.Response = _mapper.Map<List<VillaDTO>>(allVillas);
                 _apiResponse.StatusCode = HttpStatusCode.OK;
