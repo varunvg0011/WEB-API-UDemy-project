@@ -40,7 +40,7 @@ namespace Villa_WebApp.Controllers
 
                 var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
                 //identity.AddClaim(new Claim(ClaimTypes.Name, model.User.Username));
-                identity.AddClaim(new Claim(ClaimTypes.Name, jwt.Claims.FirstOrDefault(u => u.Type == "name").Value));
+                identity.AddClaim(new Claim(ClaimTypes.Name, jwt.Claims.FirstOrDefault(u => u.Type == "unique_name").Value));
 
                 //identity.AddClaim(new Claim(ClaimTypes.Role, model.User.Role));
                 //commenting above and adding belowwhen adding role from token later in project
