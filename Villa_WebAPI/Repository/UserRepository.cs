@@ -16,15 +16,18 @@ namespace Villa_WebAPI.Repository
         private readonly ApplicationDbContext _db;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private string secretKey;
 
         //userNamager is a built-in helper method used to accomplish Identity related tasks
-        public UserRepository(ApplicationDbContext db, IMapper mapper, IConfiguration configuration, UserManager<ApplicationUser> userManager)
+        public UserRepository(ApplicationDbContext db, IMapper mapper, IConfiguration configuration, 
+            UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             _db= db;
             _mapper = mapper;
             secretKey = configuration.GetValue<string>("AppSettings:Secret");
             _userManager = userManager;
+            _roleManager = roleManager;
         }
         public bool IsUniqueUser(string username)
         {
@@ -74,7 +77,10 @@ namespace Villa_WebAPI.Repository
                         //after adding identity roles will have its own table i.e. AspNetRole so 
                         //commenting above
 
-                        new Claim(ClaimTypes.Name, user.Id.ToString()),
+                        //new Claim(ClaimTypes.Name, user.Id.ToString()),
+
+                        //changing later on in project in order to get role from token itself
+                        new Claim(ClaimTypes.Name, user.UserName.ToString()),
                         new Claim(ClaimTypes.Role , roles.FirstOrDefault())
 
                     }),
@@ -87,7 +93,7 @@ namespace Villa_WebAPI.Repository
             {
                 Token = tokenHandler.WriteToken(token),
                 User = _mapper.Map<UserDTO>(user),
-                Role = roles.FirstOrDefault()
+                //Role = roles.FirstOrDefault()
             };
             return loginResp;
         }
@@ -99,7 +105,7 @@ namespace Villa_WebAPI.Repository
                 UserName = registrationRequestDTO.Username,
                 Email = registrationRequestDTO.Username,
                 NormalizedEmail = registrationRequestDTO.Username.ToUpper(),
-                Name = registrationRequestDTO.Name
+                Name = registrationRequestDTO.Name,               
             };
 
 
@@ -108,19 +114,22 @@ namespace Villa_WebAPI.Repository
                 var result = await _userManager.CreateAsync(newUser, registrationRequestDTO.Password);
                 if (result.Succeeded)
                 {
+                    if (!_roleManager.RoleExistsAsync("admin").GetAwaiter().GetResult())
+                    {
+                        await _roleManager.CreateAsync(new IdentityRole("admin"));
+                        await _roleManager.CreateAsync(new IdentityRole("customer"));
+                    }
+
                     await _userManager.AddToRoleAsync(newUser, "admin");
                     var userToReturn = _db.ApplicationUsers.FirstOrDefault(x => x.UserName == registrationRequestDTO.Username);
                     return _mapper.Map<UserDTO>(userToReturn);
                 }
-                else
-                {
-                    return null;
-                }
+                
             }
             catch (Exception e)
             {
 
-                throw;
+                
             }
             //await _db.LocalUsers.AddAsync(newUser);
             //await _db.SaveChangesAsync();

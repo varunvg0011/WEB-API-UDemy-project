@@ -2,11 +2,13 @@
 {
     public class UserDTO
     {
-        public int id { get; set; }
+        public string id { get; set; }
         public string Name { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
 
-        public string Role { get; set; }
+
+        //dont want this later in project when adding role from token itself
+        //public string Role { get; set; }
     }
 }
